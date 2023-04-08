@@ -1,0 +1,447 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><title>STM32启动代码学习 | Ayu的个人博客</title><meta name="author" content="Ayu"><meta name="copyright" content="Ayu"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="STM32 启动代码学习边看启动文件边学汇编 汇编基础知识链接ARM汇编指令集：https:&#x2F;&#x2F;blog.csdn.net&#x2F;zlmm741&#x2F;article&#x2F;details&#x2F;105189487    指令 作用    EQU 取符号名（类似C #define)，同义词 *   AREA 指示编译器汇编一个新段（代码段或数据段）   SPACE 分配内存空间并填零。[标号] SPACE [表达式]，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="STM32启动代码学习">
+<meta property="og:url" content="http://www.hexoayublog.top/2023/03/23/stm32%E7%9A%84%E5%90%AF%E5%8A%A8%E4%BB%A3%E7%A0%81/index.html">
+<meta property="og:site_name" content="Ayu的个人博客">
+<meta property="og:description" content="STM32 启动代码学习边看启动文件边学汇编 汇编基础知识链接ARM汇编指令集：https:&#x2F;&#x2F;blog.csdn.net&#x2F;zlmm741&#x2F;article&#x2F;details&#x2F;105189487    指令 作用    EQU 取符号名（类似C #define)，同义词 *   AREA 指示编译器汇编一个新段（代码段或数据段）   SPACE 分配内存空间并填零。[标号] SPACE [表达式]，">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://w.wallhaven.cc/full/2y/wallhaven-2y1rkg.jpg">
+<meta property="article:published_time" content="2023-03-22T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-03-23T15:03:04.156Z">
+<meta property="article:author" content="Ayu">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://w.wallhaven.cc/full/2y/wallhaven-2y1rkg.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://www.hexoayublog.top/2023/03/23/stm32%E7%9A%84%E5%90%AF%E5%8A%A8%E4%BB%A3%E7%A0%81/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":true,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":200},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  }
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'STM32启动代码学习',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: true,
+  isToc: true,
+  postUpdate: '2023-03-23 23:03:04'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>const preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> { preloader.endLoading() })
+
+if (true) {
+  document.addEventListener('pjax:send', () => { preloader.initLoading() })
+  document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+}</script><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/head.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-heartbeat"></i><span> 清单</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 照片</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://w.wallhaven.cc/full/2y/wallhaven-2y1rkg.jpg')"><nav id="nav"><span id="blog-info"><a href="/" title="Ayu的个人博客"><span class="site-name">Ayu的个人博客</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page group" href="javascript:void(0);"><i class="fa-fw fa fa-heartbeat"></i><span> 清单</span><i class="fas fa-chevron-down"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/Gallery/"><i class="fa-fw fas fa-images"></i><span> 照片</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">STM32启动代码学习</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2023-03-22T16:00:00.000Z" title="发表于 2023-03-23 00:00:00">2023-03-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-03-23T15:03:04.156Z" title="更新于 2023-03-23 23:03:04">2023-03-23</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/STM32/">STM32</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>8分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="STM32启动代码学习"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="STM32-启动代码学习"><a href="#STM32-启动代码学习" class="headerlink" title="STM32 启动代码学习"></a><code>STM32</code> 启动代码学习</h1><p>边看启动文件边学汇编</p>
+<h2 id="汇编基础知识链接"><a href="#汇编基础知识链接" class="headerlink" title="汇编基础知识链接"></a>汇编基础知识链接</h2><p>ARM汇编指令集：<a target="_blank" rel="noopener" href="https://blog.csdn.net/zlmm741/article/details/105189487">https://blog.csdn.net/zlmm741/article/details/105189487</a></p>
+<table>
+<thead>
+<tr>
+<th align="left">指令</th>
+<th align="left">作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>EQU</code></td>
+<td align="left">取符号名（类似C #define)，同义词 *</td>
+</tr>
+<tr>
+<td align="left"><code>AREA</code></td>
+<td align="left">指示编译器汇编一个新段（代码段或数据段）</td>
+</tr>
+<tr>
+<td align="left"><code>SPACE</code></td>
+<td align="left">分配内存空间并填零。[标号] <code>SPACE</code> [表达式]， 同义词 %</td>
+</tr>
+<tr>
+<td align="left"><code>PRESERVE8</code></td>
+<td align="left">按8字节对齐</td>
+</tr>
+<tr>
+<td align="left"><code>EXPORT</code></td>
+<td align="left">声明全局，可被外部文件使用，同义词 <code>GLOBAL</code></td>
+</tr>
+<tr>
+<td align="left"><code>DCD</code></td>
+<td align="left">以字为单位分配内存，要求4字节对齐且初始化该内存</td>
+</tr>
+<tr>
+<td align="left"><code>PROC</code></td>
+<td align="left">定义子程序，与<code>ENDP</code>成对使用，表示子程序结束 同义词 <code>FUNCTION</code></td>
+</tr>
+<tr>
+<td align="left"><code>WEAK</code></td>
+<td align="left">编译器特性。弱定义，优先使用外部文件定义的标号。</td>
+</tr>
+<tr>
+<td align="left"><code>IMPORT</code></td>
+<td align="left">声明标号来自外部文件，类似于C extern</td>
+</tr>
+<tr>
+<td align="left"><code>B</code></td>
+<td align="left">跳转到一个标号</td>
+</tr>
+<tr>
+<td align="left"><code>ALIGN</code></td>
+<td align="left">编译器指令，对指令或数据存放地址进行对齐（一般跟一个立即数，缺省为4字节）</td>
+</tr>
+<tr>
+<td align="left"><code>END</code></td>
+<td align="left"><code>EOF</code>，文件结束</td>
+</tr>
+<tr>
+<td align="left"><code>IF</code>,<code>ELSE</code>,<code>ENDIF</code></td>
+<td align="left">条件分支</td>
+</tr>
+</tbody></table>
+<h2 id="启动文件详解"><a href="#启动文件详解" class="headerlink" title="启动文件详解"></a>启动文件详解</h2><h3 id="栈"><a href="#栈" class="headerlink" title="栈"></a>栈</h3><p>​	注意，汇编里的注释符是<code>;</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">; Amount of <span class="title function_">memory</span> <span class="params">(in bytes)</span> allocated <span class="keyword">for</span> Stack <span class="comment">//栈分配的内存量（以字节为单位）</span></span><br><span class="line">; Tailor this value to your application needs <span class="comment">//请根据您的应用程序需求进行调整此值</span></span><br><span class="line">; &lt;h&gt; Stack Configuration <span class="comment">//栈配置</span></span><br><span class="line">; &lt;o&gt; Stack <span class="title function_">Size</span> <span class="params">(in Bytes)</span> &lt;0x0-0xFFFFFFFF:8&gt; <span class="comment">//栈大小（以字节为单位），范围为0x0-0xFFFFFFFF，步长为8。</span></span><br><span class="line">; &lt;/h&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 定义一个符号，0x400为1KB */</span></span><br><span class="line">Stack_Size      EQU     <span class="number">0x00000400</span></span><br><span class="line"><span class="comment">/* 汇编一个新段，名为STACK 不初始化（即不填零） 可读可写 2^3=8字节对齐 */</span></span><br><span class="line">                AREA    STACK, NOINIT, READWRITE, ALIGN=<span class="number">3</span></span><br><span class="line"><span class="comment">/* 栈本体，这里指令是分配栈大小 */</span></span><br><span class="line">Stack_Mem       SPACE   Stack_Size</span><br><span class="line"><span class="comment">/* 标名， 表示该地址（这里是末尾，即栈顶地址）*/</span> </span><br><span class="line">__initial_sp</span><br></pre></td></tr></table></figure>
+
+<p>​	也就是 <code>通知编译器链接 -&gt; 分配一片栈空间 -&gt; 记录栈顶地址</code></p>
+<p>​	栈的作用是用于局部变量，函数调用，函数形参等的开销，栈的大小不能超过内部 <code>SRAM</code> 的大小。如果编写的程序比较大，定义的局部变量很多，那么就需要修改栈的大小。如果某一天，你写的程序出现了莫名奇怪的错误，并进入了硬 <code>fault</code> 的时候，这时你就要考虑下是不是栈不够大，溢出了。</p>
+<h3 id="汇编指令详解"><a href="#汇编指令详解" class="headerlink" title="汇编指令详解"></a>汇编指令详解</h3><h4 id="EQU"><a href="#EQU" class="headerlink" title="EQU"></a><a target="_blank" rel="noopener" href="https://developer.arm.com/documentation/dui0473/m/directives-reference/equ"><code>EQU</code></a></h4><p>指令讲解如下：</p>
+<ul>
+<li><code>EQU</code></li>
+</ul>
+<p>​	<code>EQU</code> 指令为数值常量、寄存器相关值或 PC 相关值提供符号名称。</p>
+<ul>
+<li>Syntax</li>
+</ul>
+<p>​	<code>EQU</code> 名称表达式 {, 类型}</p>
+<ul>
+<li><p><code>name</code>(名称):是分配给值的符号名称。</p>
+</li>
+<li><p><code>expr</code>(表达式):是寄存器相对地址、PC 相对地址、绝对地址或 32 位整型常量。</p>
+</li>
+<li><p><code>typr</code>(类型):是可选的。可以是任何一个:</p>
+<ul>
+<li><code>ARM</code></li>
+<li><code>THUMB</code></li>
+<li><code>CODE32</code></li>
+<li><code>CODE16</code></li>
+<li><code>DATA</code></li>
+</ul>
+</li>
+<li><p>您只有在表达式内量为绝对地址的时候才能使用。如果导出，则根据 ，目标文件中符号表中的条目将标记为 <code>ARM</code>、<code>THUMB</code>、<code>CODE32</code>、<code>CODE16</code> 或 <code>DATA</code>。这可以由链接器使用。</p>
+</li>
+<li><p>Usage</p>
+</li>
+</ul>
+<p>​	使用 <code>EQU</code> 定义常量。这类似于在 C 中使用#define 定义常量。</p>
+<ul>
+<li>Examples</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">abc EQU <span class="number">2</span>               <span class="comment">//将值 2 分配给符号 abc。</span></span><br><span class="line">xyz EQU label+<span class="number">8</span>         <span class="comment">//将地址 （label+8）分配给符号 xyz</span></span><br><span class="line">fiq EQU <span class="number">0x1C</span>, CODE32    <span class="comment">//将绝对地址 0x1c 分配给符号 fiq，并将其标记为代码。</span></span><br></pre></td></tr></table></figure>
+
+<p>​	<code>EQU</code> 是伪指令，不生成二进制代码。另外，Label 就是一个标号，加不加只是为了规范，不影响二进制结果。</p>
+<h4 id="SPACE"><a href="#SPACE" class="headerlink" title="SPACE"></a><a target="_blank" rel="noopener" href="https://developer.arm.com/documentation/dui0473/m/directives-reference/space-or-fill"><code>SPACE</code></a></h4><p>指令讲解如下：</p>
+<ul>
+<li>SPACE or FILL</li>
+</ul>
+<p>​	SPACE 指令保留一个归零的内存块。 FILL 指令保留一块内存以填充给定值。</p>
+<ul>
+<li>Syntax</li>
+</ul>
+<ol>
+<li>{<code>label</code>} space <code>expr</code></li>
+<li>{<code>label</code>} FILL <code>expr</code>{ ，<code>value</code>{，<code>valuesize</code>}}</li>
+</ol>
+<ul>
+<li><code>label</code></li>
+</ul>
+<p>​	任意的一个标签</p>
+<ul>
+<li><code>expr</code></li>
+</ul>
+<p>​	给定要填充的字节数或零。</p>
+<ul>
+<li><code>value</code></li>
+</ul>
+<p>​	计算结果为用于填充保留字节的值。是可选的，如果省略，则为 0。在 <code>NOINIT</code> 区域中必须为 0。</p>
+<ul>
+<li><code>valuesize</code></li>
+</ul>
+<p>​	size的大小，单位是字节，可选可忽略</p>
+<ul>
+<li>Usage</li>
+</ul>
+<p>​	使用 ALIGN 指令对齐 SPACE 或 FILL 指令之后的任何代码。</p>
+<ul>
+<li>Example</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">        AREA    MyData, DATA, READWRITE <span class="comment">//汇编一个Mydata新段，可读可写</span></span><br><span class="line">data1   SPACE   <span class="number">255</span>       ; defines <span class="number">255</span> bytes of zeroed store <span class="comment">//定义包含 255 个字节的清零内存</span></span><br><span class="line">data2   FILL    <span class="number">50</span>,<span class="number">0xAB</span>,<span class="number">1</span> ; defines <span class="number">50</span> bytes containing <span class="number">0xAB</span> <span class="comment">//定义包含 50 个字节0xAB的内存AREA</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="AREA"><a href="#AREA" class="headerlink" title="AREA"></a><a target="_blank" rel="noopener" href="https://developer.arm.com/documentation/dui0473/m/directives-reference/area"><code>AREA</code></a></h4><p>​	伪指令指示汇编程序汇编新的代码或数据段。</p>
+<ul>
+<li>Syntax</li>
+</ul>
+<p>​	AREA <code>sectionname</code>{，<code>attr</code>}{，<code>attr</code>}…</p>
+<ul>
+<li><code>sectionname</code></li>
+</ul>
+<p>​	是要为该部分指定的名称。<code>Section（段）</code>是由链接器操作的独立、命名、不可分割的代码或数据块。</p>
+<p>​	您可以为分区选择任何名称。但是，以非字母字符开头的名称必须括在条形中，否则将生成缺少节名称错误。例如|1_data|。</p>
+<p>​	需要注意的是某些名称不能自己用的。例如，|.text|是用于 C 编译器生成的代码<code>Section（段）</code>，或与 C 库关联的代码<code>Section（段）</code>。</p>
+<ul>
+<li><code>attr</code></li>
+</ul>
+<p>​	是一个或多个逗号分隔的部分属性。有效属性为：</p>
+<ol>
+<li>ALIGN &#x3D; expression (对齐为表达式)</li>
+</ol>
+<p>​	默认情况下，ELF 部分在四字节边界上对齐。可以是 0 到 31 之间的任何整数值。该部分在 2^expression  字节边界上对齐。例如，如果表达式为 10，则该部分在 <code>1KB(2^10)</code> 边界上对齐。</p>
+<p>​	这与指定 ALIGN 指令的方式不同。</p>
+<figure class="highlight tex"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Note</span><br><span class="line">Do not use ALIGN=0 or ALIGN=1 for ARM code sections.//不要对 ARM 代码段使用 ALIGN=0 或 ALIGN=1。</span><br><span class="line">Do not use ALIGN=0 for Thumb code sections.//不要在THUMB代码段使用 ALIGN=0</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>ASSOC &#x3D; section</li>
+</ol>
+<p>​	指定关联的 ELF 部分。必须包含在包含的任何链接中 <code>section sectionname section</code></p>
+<ol start="3">
+<li>CODE</li>
+</ol>
+<p>​	在机器语言中。只读是默认值。</p>
+<ol start="4">
+<li><code>CODEALIGN</code></li>
+</ol>
+<p>​	当在节内的 ARM 或 Thumb 指令之后使用 ALIGN 指令时，导致 <code>armasm</code> 插入 <code>NOP</code> 指令，除非 ALIGN 指令指定不同的填充。 <code>CODEALIGN</code> 是只执行部分的默认值。</p>
+<p>后略</p>
+<h4 id="了解一定汇编后再看栈"><a href="#了解一定汇编后再看栈" class="headerlink" title="了解一定汇编后再看栈"></a>了解一定汇编后再看栈</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">AREA STACK, NOINIT, READWRITE, ALIGN=<span class="number">3</span>  </span><br><span class="line">SPACE <span class="number">0x00000400</span> <span class="comment">// 栈本体，这里指令是分配栈大小  </span></span><br><span class="line">&lt;编译器拿到__initial_sp所在行编译时的地址&gt;	<span class="comment">//标名， 表示该地址（这里是末尾，即栈顶地址） </span></span><br></pre></td></tr></table></figure>
+
+<h3 id="堆"><a href="#堆" class="headerlink" title="堆"></a>堆</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">; &lt;h&gt; Heap Configuration <span class="comment">//堆配置</span></span><br><span class="line">;   &lt;o&gt;  Heap <span class="title function_">Size</span> <span class="params">(in Bytes)</span> &lt;0x0-0xFFFFFFFF:8&gt; <span class="comment">//堆大小（以字节为单位），范围为0x0-0xFFFFFFFF，步长为8。</span></span><br><span class="line">; &lt;/h&gt;</span><br><span class="line"></span><br><span class="line">Heap_Size       EQU     <span class="number">0x00000800</span> <span class="comment">/* Heap_Size=2KB */</span></span><br><span class="line"></span><br><span class="line">                AREA    HEAP, NOINIT, READWRITE, ALIGN=<span class="number">3</span> <span class="comment">/*新段，名为HEAP，可读可写，不初始化，8B对齐*/</span></span><br><span class="line">__heap_base	<span class="comment">/* 堆的起始地址 */</span></span><br><span class="line">Heap_Mem        SPACE   Heap_Size <span class="comment">// 堆本体</span></span><br><span class="line">__heap_limit <span class="comment">// 堆的结束地址</span></span><br></pre></td></tr></table></figure>
+
+<p>​	堆用于 <code>malloc/calloc</code> 等用于动态分配内存的函数。</p>
+<p>​	<code>通知编译器链接 -&gt; 记录堆头地址 -&gt; 分配一片堆空间 -&gt; 记录堆尾地址</code></p>
+<p>​	静态变量和局部变量都是在 <code>SRAM</code> 中分配</p>
+<h3 id="过渡"><a href="#过渡" class="headerlink" title="过渡"></a>过渡</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">PRESERVE8 <span class="comment">//指定当前文件的栈按 8B 对齐</span></span><br><span class="line">THUMB <span class="comment">//表示后面的指令兼容 Thumb 指令集（ARM以前的16位指令集）</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="向量表"><a href="#向量表" class="headerlink" title="向量表"></a>向量表</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">AREA RESET, DATA, READONLY <span class="comment">// 汇编新段，名为RESET的数据段，只读</span></span><br><span class="line">EXPORT __Vectors 			<span class="comment">//向量表起始</span></span><br><span class="line">EXPORT __Vectors_End 		<span class="comment">//向量表末尾</span></span><br><span class="line">EXPORT __Vectors_Size 		<span class="comment">//向量表大小，可由__Vectors_End-__Vectors计算</span></span><br><span class="line"></span><br><span class="line">__Vectors       DCD     __initial_sp               ; Top of Stack</span><br><span class="line">                DCD     Reset_Handler              ; Reset Handler</span><br><span class="line">                DCD     NMI_Handler                ; NMI Handler</span><br><span class="line">			<span class="comment">// ... 省略一些代码</span></span><br><span class="line">    		   DCD     DMA2_Channel4_5_IRQHandler</span><br><span class="line">__Vectors_End  </span><br><span class="line"></span><br><span class="line">__Vectors_Size EQU     __Vectors_End - __Vectors</span><br></pre></td></tr></table></figure>
+
+<p><code>EXPORT/GLOBAL</code>声明全局，可被外部文件使用</p>
+<h5 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h5><p>​	当内核响应了一个发生的异常后，对应的异常服务例程(<code>ESR</code>)就会执行。为了决定 <code>ESR</code> 的入口地址， 内核使用了向量表查表机制。这里使用一张向量表，向量表其实是一个 WORD（32 位整数）数组，每个下标对应一种异常，该下标元素的值则是该 <code>ESR</code> 的入口地址。向量表在地址空间中的位置是可以设置的，通过 <code>NVIC</code> 中的一个重定位寄存器来指出向量表的地址。</p>
+<p>​	在复位后，该寄存器的值为 0。因此，在地址 0 （即 FLASH 地址 0） 处必须包含一张向量表，用于初始时的异常分配。要注意的是这里有个另类： 0 号类型并不是什么入口地址，而是给出了复位后 <code>MSP</code> 的初值。</p>
+<p>​	向量表从 FLASH 的 0 地址开始放置，以 4 个字节为一个单位，地址 0 存放的是栈顶地址，<code>0X04</code> 存放的是复位程序的地址，以此类推。从代码上看，向量表中存放的都是中断服务函数的函数名，可我们知道 C 语言中的函数名就是一个地址。</p>
+<p>**<code>DCD</code>**：分配一个或者多个以字为单位的内存，以四字节对齐，并要求初始化这些内存。在向量表中， <code>DCD</code> 分配了一堆内存，并且以 <code>ESR</code> 的入口地址初始化它们。</p>
+<p><strong>通俗的说：</strong>内核在异常时会访问这个表地址，并根据异常类型查表，按表跳转到异常处理函数执行。</p>
+<h3 id="各种中断处理程序-xxx-Handler"><a href="#各种中断处理程序-xxx-Handler" class="headerlink" title="各种中断处理程序 xxx_Handler"></a>各种中断处理程序 <code>xxx_Handler</code></h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AREA    |.text|, CODE, READONLY <span class="comment">//先指示编译器汇编一个新的代码段，名为 |.text|，只读</span></span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>复位程序</li>
+</ol>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">; Reset handler <span class="comment">//默认上电复位后执行的程序</span></span><br><span class="line">Reset_Handler    PROC <span class="comment">//</span></span><br><span class="line">                 EXPORT  Reset_Handler             [WEAK]</span><br><span class="line">        IMPORT  SystemInit</span><br><span class="line">        IMPORT  __main</span><br><span class="line"></span><br><span class="line">                 LDR     R0, =SystemInit</span><br><span class="line">                 BLX     R0</span><br><span class="line">                 LDR     R0, =__main</span><br><span class="line">                 BX      R0</span><br><span class="line">                 ENDP</span><br></pre></td></tr></table></figure>
+
+<p>作用：弱符号导出本程序<code>Reset_Handler</code>，导入 <code>SystemInit</code> 和 <code>__main</code> 两个符号，并 <code>LDR</code> 数据到 <code>R0</code> 寄存器，跳转执行( <code>BLX</code> &#x2F; <code>BX</code> )。</p>
+<p>注：这里需要了解ARM寄存器的作用</p>
+<p><code>PORC</code> 标记了程序的开始，<code>ENDP</code> 标记了程序的末尾。与 <code>R13(SP)</code> 寄存器相关。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="http://www.hexoayublog.top">Ayu</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://www.hexoayublog.top/2023/03/23/stm32%E7%9A%84%E5%90%AF%E5%8A%A8%E4%BB%A3%E7%A0%81/">http://www.hexoayublog.top/2023/03/23/stm32%E7%9A%84%E5%90%AF%E5%8A%A8%E4%BB%A3%E7%A0%81/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://www.hexoayublog.top" target="_blank">Ayu的个人博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://w.wallhaven.cc/full/2y/wallhaven-2y1rkg.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2023/03/23/ARM%E6%9E%B6%E6%9E%84%E5%8F%8A%E5%AF%84%E5%AD%98%E5%99%A8/" title="汇编学习 - ARM架构及`ARMv6`寄存器了解"><img class="cover" src="https://w.wallhaven.cc/full/yx/wallhaven-yxq1gk.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">汇编学习 - ARM架构及`ARMv6`寄存器了解</div></div></a></div><div class="next-post pull-right"><a href="/2023/03/10/C%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0/" title="C学习笔记 - C Prinmer Plus"><img class="cover" src="https://w.wallhaven.cc/full/gp/wallhaven-gpwr9l.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">C学习笔记 - C Prinmer Plus</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/head.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Ayu</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">0</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">5</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Ayu-Blog"><i></i><span>少女祈祷中</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/Ayu-Blog/Ayu-Blog.github.io.git" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:1147216194@qq.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">奋斗努力中（给自己一年时间，完成目标ing）</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#STM32-%E5%90%AF%E5%8A%A8%E4%BB%A3%E7%A0%81%E5%AD%A6%E4%B9%A0"><span class="toc-number">1.</span> <span class="toc-text">STM32 启动代码学习</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B1%87%E7%BC%96%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E9%93%BE%E6%8E%A5"><span class="toc-number">1.1.</span> <span class="toc-text">汇编基础知识链接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E6%96%87%E4%BB%B6%E8%AF%A6%E8%A7%A3"><span class="toc-number">1.2.</span> <span class="toc-text">启动文件详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%88"><span class="toc-number">1.2.1.</span> <span class="toc-text">栈</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B1%87%E7%BC%96%E6%8C%87%E4%BB%A4%E8%AF%A6%E8%A7%A3"><span class="toc-number">1.2.2.</span> <span class="toc-text">汇编指令详解</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#EQU"><span class="toc-number">1.2.2.1.</span> <span class="toc-text">EQU</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#SPACE"><span class="toc-number">1.2.2.2.</span> <span class="toc-text">SPACE</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#AREA"><span class="toc-number">1.2.2.3.</span> <span class="toc-text">AREA</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%86%E8%A7%A3%E4%B8%80%E5%AE%9A%E6%B1%87%E7%BC%96%E5%90%8E%E5%86%8D%E7%9C%8B%E6%A0%88"><span class="toc-number">1.2.2.4.</span> <span class="toc-text">了解一定汇编后再看栈</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A0%86"><span class="toc-number">1.2.3.</span> <span class="toc-text">堆</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%87%E6%B8%A1"><span class="toc-number">1.2.4.</span> <span class="toc-text">过渡</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%91%E9%87%8F%E8%A1%A8"><span class="toc-number">1.2.5.</span> <span class="toc-text">向量表</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%BD%9C%E7%94%A8"><span class="toc-number">1.2.5.0.1.</span> <span class="toc-text">作用</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%84%E7%A7%8D%E4%B8%AD%E6%96%AD%E5%A4%84%E7%90%86%E7%A8%8B%E5%BA%8F-xxx-Handler"><span class="toc-number">1.2.6.</span> <span class="toc-text">各种中断处理程序 xxx_Handler</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2023/03/23/ARM%E6%9E%B6%E6%9E%84%E5%8F%8A%E5%AF%84%E5%AD%98%E5%99%A8/" title="汇编学习 - ARM架构及`ARMv6`寄存器了解"><img src="https://w.wallhaven.cc/full/yx/wallhaven-yxq1gk.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="汇编学习 - ARM架构及`ARMv6`寄存器了解"/></a><div class="content"><a class="title" href="/2023/03/23/ARM%E6%9E%B6%E6%9E%84%E5%8F%8A%E5%AF%84%E5%AD%98%E5%99%A8/" title="汇编学习 - ARM架构及`ARMv6`寄存器了解">汇编学习 - ARM架构及`ARMv6`寄存器了解</a><time datetime="2023-03-22T16:00:00.000Z" title="发表于 2023-03-23 00:00:00">2023-03-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/03/23/stm32%E7%9A%84%E5%90%AF%E5%8A%A8%E4%BB%A3%E7%A0%81/" title="STM32启动代码学习"><img src="https://w.wallhaven.cc/full/2y/wallhaven-2y1rkg.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="STM32启动代码学习"/></a><div class="content"><a class="title" href="/2023/03/23/stm32%E7%9A%84%E5%90%AF%E5%8A%A8%E4%BB%A3%E7%A0%81/" title="STM32启动代码学习">STM32启动代码学习</a><time datetime="2023-03-22T16:00:00.000Z" title="发表于 2023-03-23 00:00:00">2023-03-23</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/03/10/C%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0/" title="C学习笔记 - C Prinmer Plus"><img src="https://w.wallhaven.cc/full/gp/wallhaven-gpwr9l.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="C学习笔记 - C Prinmer Plus"/></a><div class="content"><a class="title" href="/2023/03/10/C%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0/" title="C学习笔记 - C Prinmer Plus">C学习笔记 - C Prinmer Plus</a><time datetime="2023-03-09T16:00:00.000Z" title="发表于 2023-03-10 00:00:00">2023-03-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/03/02/STM32%E5%85%A5%E9%97%A8/" title="芯片学习 - STM32"><img src="https://w.wallhaven.cc/full/85/wallhaven-85gz6o.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="芯片学习 - STM32"/></a><div class="content"><a class="title" href="/2023/03/02/STM32%E5%85%A5%E9%97%A8/" title="芯片学习 - STM32">芯片学习 - STM32</a><time datetime="2023-03-01T16:00:00.000Z" title="发表于 2023-03-02 00:00:00">2023-03-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2023/03/02/%E9%9D%A2%E8%AF%95%E9%A2%98%E8%AE%B0%E5%BD%95/" title="刷题"><img src="https://w.wallhaven.cc/full/x6/wallhaven-x6evoz.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="刷题"/></a><div class="content"><a class="title" href="/2023/03/02/%E9%9D%A2%E8%AF%95%E9%A2%98%E8%AE%B0%E5%BD%95/" title="刷题">刷题</a><time datetime="2023-03-01T16:00:00.000Z" title="发表于 2023-03-02 00:00:00">2023-03-02</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('https://w.wallhaven.cc/full/2y/wallhaven-2y1rkg.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2023 By Ayu</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><div class="js-pjax"></div><script defer="defer" id="fluttering_ribbon" mobile="true" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/click-heart.min.js" async="async" mobile="true"></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"]):not([href="/music/"]):not([href="/no-pjax/"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof chatBtnFn === 'function' && chatBtnFn()
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></body></html>
